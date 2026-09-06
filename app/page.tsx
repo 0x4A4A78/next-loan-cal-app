@@ -1,69 +1,158 @@
-import Image from "next/image";
-
+"use client";
+import { useMemo, useState } from "react";
+const fmt = (n: number) =>
+  new Intl.NumberFormat("th-TH", { maximumFractionDigits: 0 }).format(n);
 export default function Home() {
+  const [principal, setPrincipal] = useState("500000");
+  const [rate, setRate] = useState("6.5");
+  const [months, setMonths] = useState("60");
+  const p = Number(principal) || 0,
+    r = (Number(rate) || 0) / 100 / 12,
+    n = Number(months) || 0;
+  const payment = useMemo(
+    () => (r ? (p * r * (1 + r) ** n) / ((1 + r) ** n - 1) : n ? p / n : 0),
+    [p, r, n],
+  );
+  const total = payment * n;
+  const interest = Math.max(0, total - p);
+  const rows = Array.from({ length: Math.min(n || 0, 12) }, (_, i) => {
+    let balance = p;
+    for (let j = 0; j < i; j++) balance -= payment - balance * r;
+    const interestPart = balance * r;
+    return {
+      month: i + 1,
+      interest: interestPart,
+      principal: payment - interestPart,
+      balance: Math.max(0, balance - payment + interestPart),
+    };
+  });
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="shell">
+      <div className="wrap">
+        <nav className="topbar">
+          <div className="brand">
+            <span>LENDLY</span>
+          </div>
+          <span className="toplink">วางแผนภาระผ่อนให้พอดี</span>
+        </nav>
+        <section className="hero">
+          <div className="eyebrow">Loan planner / 03</div>
+          <h1>
+            รู้ค่างวด
+            <br />
+            ก่อนตัดสินใจ
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p>
+            จำลองค่างวดรายเดือนและดูสัดส่วนเงินต้นกับดอกเบี้ยตลอดสัญญาได้อย่างโปร่งใส
           </p>
+        </section>
+        <div className="grid">
+          <section className="card">
+            <h2>รายละเอียดสินเชื่อ</h2>
+            <div className="form-grid">
+              <label className="field full">
+                <span className="label">
+                  ยอดเงินกู้ <small>(บาท)</small>
+                </span>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  value={principal}
+                  onChange={(e) => setPrincipal(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span className="label">
+                  ดอกเบี้ยต่อปี <small>(%)</small>
+                </span>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  step=".1"
+                  value={rate}
+                  onChange={(e) => setRate(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span className="label">
+                  ระยะเวลาผ่อน <small>(เดือน)</small>
+                </span>
+                <input
+                  className="input"
+                  type="number"
+                  min="1"
+                  value={months}
+                  onChange={(e) => setMonths(e.target.value)}
+                />
+              </label>
+            </div>
+            <div className="metric-row" style={{ marginTop: 20 }}>
+              <span>อัตราดอกเบี้ยต่อเดือน</span>
+              <strong>{(r * 100).toFixed(3)}%</strong>
+            </div>
+            <p className="note">ค่างวดคงที่ตลอดสัญญาตามสูตร Annuity</p>
+          </section>
+          <section className="card result">
+            <div className="result-main">
+              <div className="result-label">ค่างวดรายเดือน</div>
+              <div className="big-number">฿{fmt(payment)}</div>
+              <span className="badge">
+                {n} งวด · {rate}% ต่อปี
+              </span>
+            </div>
+            <div>
+              <div className="metric-row">
+                <span>ดอกเบี้ยรวมตลอดสัญญา</span>
+                <strong>฿{fmt(interest)}</strong>
+              </div>
+              <div className="metric-row">
+                <span>ยอดชำระรวม</span>
+                <strong>฿{fmt(total)}</strong>
+              </div>
+            </div>
+          </section>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <section className="card" style={{ marginTop: 18 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+            }}
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <h2 style={{ margin: 0 }}>ตารางผ่อนชำระ</h2>
+            <span className="badge">แสดง 12 งวดแรก</span>
+          </div>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>งวด</th>
+                  <th>เงินต้น</th>
+                  <th>ดอกเบี้ย</th>
+                  <th>คงเหลือ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((x) => (
+                  <tr key={x.month}>
+                    <td>{x.month}</td>
+                    <td>฿{fmt(x.principal)}</td>
+                    <td>฿{fmt(x.interest)}</td>
+                    <td>฿{fmt(x.balance)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <div className="footer">
+          ประมาณการจากอัตราดอกเบี้ยคงที่ ไม่รวมค่าธรรมเนียมจากสถาบันการเงิน
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
