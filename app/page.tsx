@@ -2,6 +2,8 @@
 import { useMemo, useState } from "react";
 const fmt = (n: number) =>
   new Intl.NumberFormat("th-TH", { maximumFractionDigits: 0 }).format(n);
+<svg className="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg>
+
 export default function Home() {
   const [principal, setPrincipal] = useState("500000");
   const [rate, setRate] = useState("6.5");
@@ -31,6 +33,7 @@ export default function Home() {
       <div className="wrap">
         <nav className="topbar">
           <div className="brand">
+            <svg className="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg>
             <span>LENDLY</span>
           </div>
           <span className="toplink">วางแผนภาระผ่อนให้พอดี</span>
